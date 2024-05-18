@@ -1,6 +1,10 @@
 package main
 
-import "math"
+import (
+	"math"
+
+	"github.com/veandco/go-sdl2/sdl"
+)
 
 type Point3D struct {
 	X, Y, Z float64
@@ -39,6 +43,13 @@ func (point *Point3D) rotateZ(angle float64) {
 
 	point.X = x
 	point.Y = y
+
+}
+
+func (point *Point3D) rotate(x, y, z float64) {
+	point.rotateX(x)
+	point.rotateY(y)
+	point.rotateZ(z)
 
 }
 
@@ -84,5 +95,36 @@ func (aV *AngleVelocity) changeAngleVelociity(up bool) {
 		aV.angleYVel += adder
 	case zAxe:
 		aV.angleZVel += adder
+	}
+}
+
+type GameObject3D struct {
+	vertices        *[]Point3D
+	updatedVertices []Point3D
+	edges           *[][]int
+	angles          *AngleVelocity
+	position        *Point3D
+}
+
+func (gameObj *GameObject3D) rotate() {
+	gameObj.angles.updateAngles()
+	// Rotate vertices
+	for i, vertex := range *gameObj.vertices {
+		vertex.rotate(
+			gameObj.angles.angleX,
+			gameObj.angles.angleY,
+			gameObj.angles.angleZ,
+		)
+		gameObj.updatedVertices[i] = vertex
+	}
+}
+func (gameObj *GameObject3D) draw(renderer *sdl.Renderer) {
+	for _, edge := range *gameObj.edges {
+		renderer.DrawLine(
+			int32(gameObj.updatedVertices[edge[0]].X+gameObj.position.X),
+			int32(gameObj.updatedVertices[edge[0]].Y+gameObj.position.Y),
+			int32(gameObj.updatedVertices[edge[1]].X+gameObj.position.X),
+			int32(gameObj.updatedVertices[edge[1]].Y+gameObj.position.Y),
+		)
 	}
 }

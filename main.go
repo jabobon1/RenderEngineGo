@@ -9,6 +9,7 @@ import (
 
 var FPS uint32 = 60
 var SPEED uint32 = 5
+var MOVE_SPEED float64 = 10
 
 const (
 	xAxe int = 0
@@ -118,9 +119,7 @@ func main() {
 		return
 	}
 	defer ttf.Quit()
-
-	vertices, edges := getCube3D(300)
-	angleVelocity := AngleVelocity{0, 0, 0, 0, 0, 0, 0}
+	cube := getCube3D(300)
 
 	for {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
@@ -133,38 +132,30 @@ func main() {
 				} else if t.Keysym.Sym == sdl.K_DOWN && t.State == sdl.PRESSED {
 					updateFPS(false)
 				} else if t.Keysym.Sym == sdl.K_SPACE && t.State == sdl.PRESSED {
-					angleVelocity.changeAxe()
+					cube.angles.changeAxe()
 				} else if t.Keysym.Sym == sdl.K_LEFT && t.State == sdl.PRESSED {
-					angleVelocity.changeAngleVelociity(false)
+					cube.angles.changeAngleVelociity(false)
 				} else if t.Keysym.Sym == sdl.K_RIGHT && t.State == sdl.PRESSED {
-					angleVelocity.changeAngleVelociity(true)
+					cube.angles.changeAngleVelociity(true)
+				} else if t.Keysym.Sym == sdl.K_a && t.State == sdl.PRESSED {
+					cube.position.X -= MOVE_SPEED
+				} else if t.Keysym.Sym == sdl.K_d && t.State == sdl.PRESSED {
+					cube.position.X += MOVE_SPEED
+				} else if t.Keysym.Sym == sdl.K_w && t.State == sdl.PRESSED {
+					cube.position.Y -= MOVE_SPEED
+				} else if t.Keysym.Sym == sdl.K_s && t.State == sdl.PRESSED {
+					cube.position.Y += MOVE_SPEED
 				}
 			}
 		}
-		angleVelocity.updateAngles()
-
-		// Rotate vertices
-		rotatedVertices := make([]Point3D, len(vertices))
-		for i, vertex := range vertices {
-			vertex.rotateX(angleVelocity.angleX)
-			vertex.rotateY(angleVelocity.angleY)
-			vertex.rotateZ(angleVelocity.angleZ)
-			rotatedVertices[i] = vertex
-		}
+		cube.rotate()
 
 		renderer.SetDrawColor(WHITE.R, WHITE.G, WHITE.B, WHITE.A)
 		renderer.Clear()
 
 		renderer.SetDrawColor(BLACK.R, BLACK.G, BLACK.B, BLACK.A)
-		for _, edge := range edges {
-			renderer.DrawLine(
-				int32(rotatedVertices[edge[0]].X+700),
-				int32(rotatedVertices[edge[0]].Y+500),
-				int32(rotatedVertices[edge[1]].X+700),
-				int32(rotatedVertices[edge[1]].Y+500),
-			)
-		}
-		err := drawUI(renderer, &angleVelocity)
+		cube.draw(renderer)
+		err := drawUI(renderer, cube.angles)
 		if err != nil {
 			fmt.Println("Error drawing UI:", err)
 			return
