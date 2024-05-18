@@ -1,15 +1,15 @@
 package main
 
-func getCube3D() ([]Point3D, [][]int) {
+func getCube3D(size float64) ([]Point3D, [][]int) {
 	vertices := []Point3D{
-		{X: -100, Y: -100, Z: 100},
-		{X: 100, Y: -100, Z: 100},
-		{X: 100, Y: 100, Z: 100},
-		{X: -100, Y: 100, Z: 100},
-		{X: -100, Y: -100, Z: -100},
-		{X: 100, Y: -100, Z: -100},
-		{X: 100, Y: 100, Z: -100},
-		{X: -100, Y: 100, Z: -100},
+		{X: -size, Y: -size, Z: size},
+		{X: size, Y: -size, Z: size},
+		{X: size, Y: size, Z: size},
+		{X: -size, Y: size, Z: size},
+		{X: -size, Y: -size, Z: -size},
+		{X: size, Y: -size, Z: -size},
+		{X: size, Y: size, Z: -size},
+		{X: -size, Y: size, Z: -size},
 	}
 	edges := [][]int{
 		{0, 1}, {1, 2}, {2, 3}, {3, 0}, // Front face

@@ -1,4 +1,6 @@
 package main
 
-var WHITE = RGBA{255, 255, 255, 255}
-var BLACK = RGBA{0, 0, 0, 255}
+import "github.com/veandco/go-sdl2/sdl"
+
+var WHITE = sdl.Color{R: 255, G: 255, B: 255, A: 255}
+var BLACK = sdl.Color{R: 0, G: 0, B: 0, A: 255}

@@ -6,10 +6,6 @@ type Point3D struct {
 	X, Y, Z float64
 }
 
-type RGBA struct {
-	r, g, b, a uint8
-}
-
 func (point *Point3D) rotateX(angle float64) {
 	rad := angle * math.Pi / 180.0
 	sin, cos := math.Sin(rad), math.Cos(rad)
