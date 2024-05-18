@@ -41,3 +41,48 @@ func (point *Point3D) rotateZ(angle float64) {
 	point.Y = y
 
 }
+
+type AngleVelocity struct {
+	angleX, angleY, angleZ          float64
+	angleXVel, angleYVel, angleZVel float64
+	currentAxeIdx                   int
+}
+
+func (aV *AngleVelocity) updateAngles() {
+	aV.angleX = math.Mod(aV.angleX+aV.angleXVel, 360)
+	aV.angleY = math.Mod(aV.angleY+aV.angleYVel, 360)
+	aV.angleZ = math.Mod(aV.angleZ+aV.angleZVel, 360)
+}
+func (aV *AngleVelocity) changeAxe() {
+	aV.currentAxeIdx = (aV.currentAxeIdx + 1) % len(axes)
+
+}
+
+func (aV *AngleVelocity) getAxName() string {
+	switch axes[aV.currentAxeIdx] {
+	case xAxe:
+		return "X"
+	case yAxe:
+		return "Y"
+	case zAxe:
+		return "Z"
+	}
+	return ""
+}
+
+func (aV *AngleVelocity) changeAngleVelociity(up bool) {
+	var adder float64 = 1
+	if !up {
+		adder = -1
+	}
+	axe := aV.currentAxeIdx
+
+	switch axe {
+	case xAxe:
+		aV.angleXVel += adder
+	case yAxe:
+		aV.angleYVel += adder
+	case zAxe:
+		aV.angleZVel += adder
+	}
+}
