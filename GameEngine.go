@@ -11,6 +11,7 @@ type GameEngine struct {
 	gameObjects *[]GameObject3D
 	window      *sdl.Window
 	renderer    *sdl.Renderer
+	camera      *Camera
 }
 
 func (g *GameEngine) Close() {
@@ -53,7 +54,9 @@ func initGameEngine(gameObjects *[]GameObject3D, width, heigh int32) (*GameEngin
 		gameObjects = &gObjs
 	}
 
-	return &GameEngine{gameObjects, window, renderer}, nil
+	camera := Camera{Vector3D{0, 0, 20}, Vector3D{0, 0, 0}, Vector3D{1, 1, 5}, Vector3D{0.2, 0.2, 0}}
+
+	return &GameEngine{gameObjects, window, renderer, &camera}, nil
 
 }
 
@@ -84,7 +87,7 @@ type GameObjectInterface interface {
 	handleKeyBoardPress(event sdl.Event) bool
 }
 
-func run(e GameObjectInterface, fps uint32) {
+func run(fps *uint32, e GameObjectInterface) {
 	for {
 		e.update()
 		stop := false
@@ -94,6 +97,6 @@ func run(e GameObjectInterface, fps uint32) {
 		if stop {
 			return
 		}
-		sdl.Delay(1000 / fps)
+		sdl.Delay(1000 / *fps)
 	}
 }
