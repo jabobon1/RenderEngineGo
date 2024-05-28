@@ -12,8 +12,8 @@ var SPEED uint32 = 5
 var MOVE_SPEED float64 = 0.1
 
 const (
-	WIDTH      int32   = 1200
-	HEIGHT     int32   = 700
+	WIDTH      int32   = 2000
+	HEIGHT     int32   = 1500
 	fov        float64 = 45.0 // Vertical field of view
 	nearPlane          = 0.1
 	farPlane           = 100.0
@@ -65,41 +65,10 @@ func (c *Camera) updateObject(gameObject *GameObject3D) {
 	// 	{0, 0, 0, 1},
 	// }
 
-	rad := gameObject.angles.angleX * math.Pi / 180.0
-	sin, cos := math.Sin(rad), math.Cos(rad)
-
-	// Create rotation matrices based on the camera's updated rotation angles
-	rotateX := Matrix4x4{
-		{1, 0, 0, 0},
-		{0, cos, -sin, 0},
-		{0, sin, cos, 0},
-		{0, 0, 0, 1},
-	}
-
-	rad = gameObject.angles.angleY * math.Pi / 180.0
-	sin, cos = math.Sin(rad), math.Cos(rad)
-
-	rotateY := Matrix4x4{
-		{cos, 0, sin, 0},
-		{0, 1, 0, 0},
-		{-sin, 0, cos, 0},
-		{0, 0, 0, 1},
-	}
-
-	rad = gameObject.angles.angleZ * math.Pi / 180.0
-	sin, cos = math.Sin(rad), math.Cos(rad)
-
-	rotateZ := Matrix4x4{
-		{cos, -sin, 0, 0},
-		{sin, cos, 0, 0},
-		{0, 0, 1, 0},
-		{0, 0, 0, 1},
-	}
-
 	// // // Combine the rotation matrices
-	rotationMatrix := rotateX.Multiply(rotateY).Multiply(rotateZ)
-
-	// fmt.Println("rotationMatrix ", rotationMatrix)
+	rotationMatrix := XYZRotationMatrix(gameObject.angles.angleX,
+		gameObject.angles.angleY,
+		gameObject.angles.angleZ)
 
 	// // Combine the translation and rotation matrices
 	// transformMatrix := projection_matrix.Multiply(rotationMatrix)
@@ -232,6 +201,12 @@ func main() {
 
 	myEngine := MyGameEngine{*gameEngine}
 	cube := getCube3D(1)
+	// cube := getPyramid3D(1)
+	// cube := getSphere3D(5, 180)
+	// cube := getTorus3D(10, 2, 50, 20)
+
+	// Call the getLandscape3D function with the provided parameters
+
 	myEngine.addGameObj(cube)
 	fmt.Println("myEngine", myEngine.gameObjects)
 	run(&FPS, myEngine)
