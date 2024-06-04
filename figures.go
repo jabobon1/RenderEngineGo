@@ -2,16 +2,16 @@ package main
 
 import "math"
 
-func getCube3D(size float64) GameObject3D {
+func getRectangle3D(sizeX, sizeY, sizeZ float64) GameObject3D {
 	vertices := []Vector3D{
-		{-size, -size, -size},
-		{size, -size, -size},
-		{size, size, -size},
-		{-size, size, -size},
-		{-size, -size, size},
-		{size, -size, size},
-		{size, size, size},
-		{-size, size, size},
+		{-sizeX, -sizeY, -sizeZ},
+		{sizeX, -sizeY, -sizeZ},
+		{sizeX, sizeY, -sizeZ},
+		{-sizeX, sizeY, -sizeZ},
+		{-sizeX, -sizeY, sizeZ},
+		{sizeX, -sizeY, sizeZ},
+		{sizeX, sizeY, sizeZ},
+		{-sizeX, sizeY, sizeZ},
 	}
 	rotatedVertices := make([]Vector2D, len(vertices))
 
@@ -25,6 +25,9 @@ func getCube3D(size float64) GameObject3D {
 	rotation := Vector3D{angleVelocity.angleX, angleVelocity.angleY, angleVelocity.angleZ}
 
 	return GameObject3D{&vertices, rotatedVertices, &edges, &angleVelocity, &position, &rotation}
+}
+func getCube3D(size float64) GameObject3D {
+	return getRectangle3D(size, size, size)
 }
 
 func getPyramid3D(size float64) GameObject3D {
