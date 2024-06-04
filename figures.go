@@ -13,7 +13,7 @@ func getCube3D(size float64) GameObject3D {
 		{size, size, size},
 		{-size, size, size},
 	}
-	rotatedVertices := make([]Vector3D, len(vertices))
+	rotatedVertices := make([]Vector2D, len(vertices))
 
 	edges := [][]int{
 		{0, 1}, {1, 2}, {2, 3}, {3, 0}, // Front face
@@ -21,7 +21,7 @@ func getCube3D(size float64) GameObject3D {
 		{0, 4}, {1, 5}, {2, 6}, {3, 7}, // Connecting edges
 	}
 	angleVelocity := AngleVelocity{0, 0, 0, 0, 0, 0, 0}
-	position := Vector3D{10, 10, 10}
+	position := Vector3D{0, 0, 0}
 	rotation := Vector3D{angleVelocity.angleX, angleVelocity.angleY, angleVelocity.angleZ}
 
 	return GameObject3D{&vertices, rotatedVertices, &edges, &angleVelocity, &position, &rotation}
@@ -34,7 +34,7 @@ func getPyramid3D(size float64) GameObject3D {
 		{0, size, 0},
 		{0, -size, size},
 	}
-	rotatedVertices := make([]Vector3D, len(vertices))
+	rotatedVertices := make([]Vector2D, len(vertices))
 	edges := [][]int{
 		{0, 1}, {1, 2}, {2, 0}, // Base edges
 		{0, 3}, {1, 3}, {2, 3}, // Side edges
@@ -57,7 +57,7 @@ func getSphere3D(radius float64, segments int) GameObject3D {
 			vertices = append(vertices, Vector3D{x, y, z})
 		}
 	}
-	rotatedVertices := make([]Vector3D, len(vertices))
+	rotatedVertices := make([]Vector2D, len(vertices))
 	edges := make([][]int, 0)
 	for i := 0; i < segments; i++ {
 		for j := 0; j < segments; j++ {
@@ -87,7 +87,7 @@ func getTorus3D(majorRadius, minorRadius float64, majorSegments, minorSegments i
 			vertices = append(vertices, Vector3D{x, y, z})
 		}
 	}
-	rotatedVertices := make([]Vector3D, len(vertices))
+	rotatedVertices := make([]Vector2D, len(vertices))
 	edges := make([][]int, 0)
 
 	for i := 0; i < majorSegments; i++ {

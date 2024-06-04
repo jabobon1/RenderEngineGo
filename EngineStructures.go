@@ -6,6 +6,9 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+type Vector2D struct {
+	X, Y float64
+}
 type Vector3D struct {
 	X, Y, Z float64
 }
@@ -60,7 +63,7 @@ func (aV *AngleVelocity) changeAngleVelociity(up bool) {
 
 type GameObject3D struct {
 	vertices        *[]Vector3D
-	updatedVertices []Vector3D
+	updatedVertices []Vector2D
 	edges           *[][]int
 	angles          *AngleVelocity
 	position        *Vector3D
@@ -106,4 +109,50 @@ func (m Matrix4x4) MultiplyVector(v Vector4D) Vector4D {
 	result.W = m[3][0]*v.X + m[3][1]*v.Y + m[3][2]*v.Z + m[3][3]*v.W
 
 	return result
+}
+
+type Camera struct {
+	position    Vector3D
+	rotation    Vector3D
+	previousPos Vector3D
+	previousRot Vector3D
+	fovRadV     float64
+	fovRadH     float64
+}
+
+func (c *Camera) changePosition(newPosition Vector3D) {
+	c.previousPos = c.position
+	c.position = Add(c.position, newPosition)
+}
+
+func (c *Camera) updateObject(gameObject *GameObject3D) {
+	// // // Combine the rotation matrices
+	rotationMatrix := XYZRotationMatrix(
+		gameObject.angles.angleX,
+		gameObject.angles.angleY,
+		gameObject.angles.angleZ)
+
+	// // Combine the translation and rotation matrices
+	// transformMatrix := projection_matrix.Multiply(rotationMatrix)
+
+	for i, vertex := range *gameObject.vertices {
+		// Convert the vertex to a 4D vector
+		vec4D := Vector4D{vertex.X, vertex.Y, vertex.Z, 1}
+		rotatedMatrix := rotationMatrix.MultiplyVector(vec4D)
+
+		y := rotatedMatrix.Y - c.position.Y - gameObject.position.Y
+		x := rotatedMatrix.X - c.position.X - gameObject.position.X
+		z := rotatedMatrix.Z - c.position.Z - gameObject.position.Z
+
+		if math.Abs(z) < zThreshold {
+			if z < 0 {
+				z = -zThreshold
+			} else {
+				z = zThreshold
+			}
+		}
+		// Update the vertex in the updatedVertices slice
+		gameObject.updatedVertices[i] = c.projectedXY(x, y, z)
+	}
+
 }

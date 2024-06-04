@@ -105,3 +105,12 @@ func XYZRotationMatrix(aX, aY, aZ float64) Matrix4x4 {
 		{0, 0, 0, 1},
 	}
 }
+
+func (c *Camera) projectedXY(x, y, z float64) Vector2D {
+	projectedX := x * c.fovRadH
+	projectedY := y * c.fovRadV
+	projectedX = (projectedX/z + 1.0) * float64(WIDTH) * 0.5
+	projectedY = (1.0 - projectedY/z) * float64(HEIGHT) * 0.5
+
+	return Vector2D{projectedX, projectedY}
+}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
@@ -21,7 +22,7 @@ func (g *GameEngine) Close() {
 	sdl.Quit()
 }
 
-func initGameEngine(gameObjects *[]GameObject3D, width, heigh int32) (*GameEngine, error) {
+func initGameEngine(gameObjects *[]GameObject3D, width, heigh int32, fov float64) (*GameEngine, error) {
 	if err := sdl.Init(sdl.INIT_VIDEO); err != nil {
 		fmt.Println("Error initializing SDL:", err)
 		return nil, err
@@ -54,10 +55,25 @@ func initGameEngine(gameObjects *[]GameObject3D, width, heigh int32) (*GameEngin
 		gameObjects = &gObjs
 	}
 
-	camera := Camera{Vector3D{0, 0, 20}, Vector3D{0, 0, 0}, Vector3D{1, 1, 5}, Vector3D{0.2, 0.2, 0}}
+	fovRadV, fovRadH := getFovVH(float64(width), float64(heigh), fov)
+
+	camera := Camera{Vector3D{0, 0, 20},
+		Vector3D{0, 0, 0},
+		Vector3D{1, 1, 5},
+		Vector3D{0.2, 0.2, 0},
+		fovRadV,
+		fovRadH,
+	}
 
 	return &GameEngine{gameObjects, window, renderer, &camera}, nil
 
+}
+
+func getFovVH(width, heigh, fov float64) (float64, float64) {
+	aspectRatio := float64(width) / float64(heigh)
+	fovRadV := 1.0 / math.Tan(fov*0.5/180.0*math.Pi)
+	fovRadH := fovRadV / aspectRatio
+	return fovRadV, fovRadH
 }
 
 type GameObject3DAbs interface {
@@ -83,13 +99,30 @@ func (e *GameEngine) addGameObj(gameObject GameObject3D) {
 }
 
 type GameObjectInterface interface {
+	drawObjects()
 	update()
 	handleKeyBoardPress(event sdl.Event) bool
 }
 
+func (e GameEngine) drawObjects() {
+	e.renderer.SetDrawColor(WHITE.R, WHITE.G, WHITE.B, WHITE.A)
+	e.renderer.Clear()
+	e.renderer.SetDrawColor(BLACK.R, BLACK.G, BLACK.B, BLACK.A)
+
+	for _, gamgeObj := range *e.gameObjects {
+		gamgeObj.draw(e.renderer)
+	}
+	e.renderer.Present()
+}
+func EngineUpdate(e GameObjectInterface) {
+	e.update()
+	e.drawObjects()
+
+}
+
 func run(fps *uint32, e GameObjectInterface) {
 	for {
-		e.update()
+		EngineUpdate(e)
 		stop := false
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			stop = e.handleKeyBoardPress(event)
