@@ -59,8 +59,6 @@ func initGameEngine(gameObjects *[]GameObject3D, width, heigh int32, fov float64
 
 	camera := Camera{Vector3D{0, 0, 20},
 		Vector3D{0, 0, 0},
-		Vector3D{1, 1, 5},
-		Vector3D{0.2, 0.2, 0},
 		fovRadV,
 		fovRadH,
 	}
@@ -105,14 +103,8 @@ type GameObjectInterface interface {
 }
 
 func (e GameEngine) drawObjects() {
-	e.renderer.SetDrawColor(WHITE.R, WHITE.G, WHITE.B, WHITE.A)
-	e.renderer.Clear()
-	e.renderer.SetDrawColor(BLACK.R, BLACK.G, BLACK.B, BLACK.A)
+	e.camera.drawObjects(e.renderer, e.gameObjects)
 
-	for _, gamgeObj := range *e.gameObjects {
-		gamgeObj.draw(e.renderer)
-	}
-	e.renderer.Present()
 }
 func EngineUpdate(e GameObjectInterface) {
 	e.update()

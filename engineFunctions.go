@@ -32,26 +32,42 @@ func AngleBetween(v1, v2 Vector3D) Vector3D {
 	}
 }
 
+func Magnitude(v Vector3D) float64 {
+	return math.Sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
+}
 func Normalize(v Vector3D) Vector3D {
-	length := math.Sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
-	return Vector3D{v.X / length, v.Y / length, v.Z / length}
+	mag := Magnitude(v)
+	return Vector3D{X: v.X / mag, Y: v.Y / mag, Z: v.Z / mag}
 }
 
 func Add(v1, v2 Vector3D) Vector3D {
 	return Vector3D{v1.X + v2.X, v1.Y + v2.Y, v1.Z + v2.Z}
 }
+func Add2D(v1, v2 Vector2D) Vector2D {
+	return Vector2D{v1.X + v2.X, v1.Y + v2.Y}
+}
+func Mult(v1, v2 Vector3D) Vector3D {
+	return Vector3D{v1.X * v2.X, v1.Y * v2.Y, v1.Z * v2.Z}
+}
+func Mult2D(v1, v2 Vector2D) Vector2D {
+	return Vector2D{v1.X * v2.X, v1.Y * v2.Y}
+}
 
 func Sub(v1, v2 Vector3D) Vector3D {
-	return Vector3D{v1.X - v2.X, v1.Y - v2.Y, v1.Z - v2.Z}
+	return Vector3D{X: v1.X - v2.X, Y: v1.Y - v2.Y, Z: v1.Z - v2.Z}
+}
+
+func Sub2D(v1, v2 Vector2D) Vector2D {
+	return Vector2D{v1.X - v2.X, v1.Y - v2.Y}
 }
 
 func Cross(v1, v2 Vector3D) Vector3D {
-	x := v1.Y*v2.Z - v1.Z*v2.Y
-	y := v1.Z*v2.X - v1.X*v2.Z
-	z := v1.X*v2.Y - v1.Y*v2.X
-	return Vector3D{x, y, z}
+	return Vector3D{
+		X: v1.Y*v2.Z - v1.Z*v2.Y,
+		Y: v1.Z*v2.X - v1.X*v2.Z,
+		Z: v1.X*v2.Y - v1.Y*v2.X,
+	}
 }
-
 func Dot(v1, v2 Vector3D) float64 {
 	return v1.X*v2.X + v1.Y*v2.Y + v1.Z*v2.Z
 }
@@ -106,11 +122,40 @@ func XYZRotationMatrix(aX, aY, aZ float64) Matrix4x4 {
 	}
 }
 
-func (c *Camera) projectedXY(x, y, z float64) Vector2D {
-	projectedX := x * c.fovRadH
-	projectedY := y * c.fovRadV
-	projectedX = (projectedX/z + 1.0) * float64(WIDTH) * 0.5
-	projectedY = (1.0 - projectedY/z) * float64(HEIGHT) * 0.5
+type Line struct {
+	vec1, vec2 Vector3D
+}
 
-	return Vector2D{projectedX, projectedY}
+func (line Line) Cross(v1, v2 Vector3D) float64 {
+	return v1.X*v2.Y - v1.Y*v2.X
+
+}
+
+func getIntersectionVector(line1, line2 Line) (Vector3D, bool) {
+	sub1 := Sub(line1.vec2, line1.vec1)
+	sub2 := Sub(line2.vec2, line2.vec1)
+
+	cross_prod := line1.Cross(sub1, sub2)
+	if cross_prod == 0 {
+		return Vector3D{0, 0, 0}, false
+	}
+	vec1Sub := Sub(line2.vec1, line1.vec1)
+	crossSub1 := line1.Cross(vec1Sub, sub2)
+
+	t := crossSub1 / cross_prod
+
+	interesctionVector := Add(
+		line1.vec1,
+		Mult(line1.vec2, Vector3D{t, t, t}), // multiplying by time
+	)
+
+	return interesctionVector, true
+}
+
+func Centroid(p1, p2, p3 Vector3D) Vector3D {
+	return Vector3D{
+		X: (p1.X + p2.X + p3.X) / 3,
+		Y: (p1.Y + p2.Y + p3.Y) / 3,
+		Z: (p1.Z + p2.Z + p3.Z) / 3,
+	}
 }
