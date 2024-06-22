@@ -1,5 +1,7 @@
 package main
 
+import "github.com/veandco/go-sdl2/sdl"
+
 func getRectangle3D(size Vector3D) GameObject3D {
 	vertices := []Vector3D{
 		{-size.X, -size.Y, -size.Z}, // 0
@@ -30,13 +32,23 @@ func getRectangle3D(size Vector3D) GameObject3D {
 		{1, 0, 0}, {1, 0, 0}, // Right face
 		{-1, 0, 0}, {-1, 0, 0}, // Left face
 	}
+
+	colorMap := []sdl.Color{
+		{R: 255, G: 0, B: 0, A: 255}, {R: 255, G: 0, B: 0, A: 255},
+		{R: 200, G: 0, B: 0, A: 255}, {R: 200, G: 0, B: 0, A: 255},
+		{R: 150, G: 0, B: 0, A: 255}, {R: 150, G: 0, B: 0, A: 255},
+		{R: 100, G: 0, B: 0, A: 255}, {R: 100, G: 0, B: 0, A: 255},
+		{R: 100, G: 0, B: 0, A: 255}, {R: 100, G: 0, B: 0, A: 255},
+		{R: 100, G: 0, B: 0, A: 255}, {R: 100, G: 0, B: 0, A: 255},
+	}
+
 	updatedNormals := make([]Vector3D, len(normalMap))
 
 	angleVelocity := AngleVelocity{0, 0, 0, 0, 0, 0, 0}
 	position := Vector3D{0, 0, 0}
 	rotation := Vector3D{angleVelocity.angleX, angleVelocity.angleY, angleVelocity.angleZ}
 
-	return GameObject3D{&vertices, rotatedVertices, updatedNormals, normalMap, &indices, &angleVelocity, &position, &rotation, size}
+	return GameObject3D{&vertices, rotatedVertices, updatedNormals, normalMap, colorMap, &indices, &angleVelocity, &position, &rotation, size}
 }
 
 func getCube3D(size float64) GameObject3D {

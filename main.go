@@ -87,11 +87,11 @@ func (e MyGameEngine) update() {
 		gamgeObj.angles.updateAngles()
 		e.camera.updateObject(&gamgeObj)
 		if !drawedUi {
-			err := drawUI(e.renderer, gamgeObj.angles)
-			if err != nil {
-				fmt.Println("Error drawing UI:", err)
-				return
-			}
+			// err := drawUI(e.renderer, gamgeObj.angles)
+			// if err != nil {
+			// 	fmt.Println("Error drawing UI:", err)
+			// 	return
+			// }
 			drawedUi = true
 		}
 	}

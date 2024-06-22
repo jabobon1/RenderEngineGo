@@ -7,7 +7,7 @@ import (
 	"github.com/veandco/go-sdl2/ttf"
 )
 
-func drawText(renderer *sdl.Renderer, text string, x, y int32, color sdl.Color) (sdl.Rect, error) {
+func drawText(renderer *sdl.Renderer, text string, x, y int32, angle float64, color sdl.Color) (sdl.Rect, error) {
 	// Load the font
 	font, err := ttf.OpenFont("/usr/share/fonts/opentype/unifont/unifont.otf", 24)
 	if err != nil {
@@ -32,11 +32,13 @@ func drawText(renderer *sdl.Renderer, text string, x, y int32, color sdl.Color) 
 	// Calculate the position and size of the text
 	rect := sdl.Rect{X: x, Y: y, W: surface.W, H: surface.H}
 
+	renderer.CopyEx(texture, nil, &rect, angle, &sdl.Point{X: surface.W / 2, Y: surface.H / 2}, sdl.FLIP_NONE)
+
 	// Copy the texture to the rendering target
-	err = renderer.Copy(texture, nil, &rect)
-	if err != nil {
-		return sdl.Rect{0, 0, 0, 0}, fmt.Errorf("failed to copy texture: %v", err)
-	}
+	// err = renderer.Copy(texture, nil, &rect)
+	// if err != nil {
+	// 	return sdl.Rect{0, 0, 0, 0}, fmt.Errorf("failed to copy texture: %v", err)
+	// }
 
 	return rect, nil
 }

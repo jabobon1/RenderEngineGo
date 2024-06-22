@@ -67,6 +67,7 @@ type GameObject3D struct {
 	updatedVertices []Vector3D
 	updatedNormals  []Vector3D
 	normalMap       []Vector3D
+	colorMap        []sdl.Color
 	indicies        *[][]int
 	angles          *AngleVelocity
 	position        *Vector3D
@@ -193,64 +194,93 @@ func (c *Camera) projectedXY(x, y, z float64) Vector3D {
 // 	}
 
 // }
+
+type LinePoints struct {
+	p1, p2 sdl.Point
+}
+
+func getLine(p1, p2 sdl.Point) LinePoints {
+	if p1.X < p2.X {
+		return LinePoints{p1, p2}
+	} else if p1.X == p2.X {
+		if p1.Y < p2.Y {
+			return LinePoints{p1, p2}
+		}
+		return LinePoints{p2, p1}
+	}
+	return LinePoints{p2, p1}
+
+}
+
+func vertexFromPoint(p Vector3D, color sdl.Color) sdl.Vertex {
+	return sdl.Vertex{
+		Position: sdl.FPoint{X: float32(p.X), Y: float32(p.Y)},
+		Color:    color,
+		TexCoord: sdl.FPoint{X: 0, Y: 0},
+	}
+
+}
+
 func (c *Camera) drawObjects(renderer *sdl.Renderer, gameObjects *[]GameObject3D) {
 	renderer.SetDrawColor(WHITE.R, WHITE.G, WHITE.B, WHITE.A)
 	renderer.Clear()
 	renderer.SetDrawColor(BLACK.R, BLACK.G, BLACK.B, BLACK.A)
 
-	points := make([]sdl.Point, 0)
+	colorPoints := make([][]sdl.Vertex, 0)
+	uniquePoints := make(map[LinePoints]int)
 
 	for _, gameObj := range *gameObjects {
-		// Define the camera direction as a normalized vector pointing from the camera's position
-		// cameraDirection := Normalize(Sub(*gameObj.position, Add(c.position, Vector3D{0, 1, 0})))
-
-		fmt.Printf("Camera pos: x %f, y %f, z %f\n", c.position.X, c.position.Y, c.position.Z)
-		// fmt.Println("cameraDirection: ", cameraDirection)
-
-		fmt.Printf("GameObject: vertices %d, indices %d\n", len(*gameObj.vertices), len(*gameObj.indicies))
-		fmt.Printf("Angles: x %f, y %f, z %f\n", gameObj.angles.angleX, gameObj.angles.angleY, gameObj.angles.angleZ)
-		fmt.Printf("GameObject pos: x %f, y %f, z %f\n", gameObj.position.X, gameObj.position.Y, gameObj.position.Z)
-
 		for idxPol, polygons := range *gameObj.indicies {
 			// we add normal here because object pos != face pos, here we can take face pos by add size * normal and add obj pos
 			cameraDirection := Normalize(Sub(*gameObj.position, Add(c.position, Mult(gameObj.size, gameObj.updatedNormals[idxPol]))))
-
-			// center := Centroid(gameObj.updatedVertices[polygons[0]], gameObj.updatedVertices[polygons[1]], gameObj.updatedVertices[polygons[2]])
-			// facePos := Add(*gameObj.position, center)
-			// cameraDirection := Normalize(Sub(facePos, c.position))
-			fmt.Println("cameraDirection: ", cameraDirection)
 
 			p1 := gameObj.updatedVertices[polygons[0]]
 			p2 := gameObj.updatedVertices[polygons[1]]
 			p3 := gameObj.updatedVertices[polygons[2]]
 
-			// t1 := Sub(gameObj.updatedNormals[polygons[1]], gameObj.updatedNormals[polygons[0]])
-			// t2 := Sub(gameObj.updatedNormals[polygons[2]], gameObj.updatedNormals[polygons[0]]) // Correct the second vector subtraction
-			// normal := Normalize(Cross(t1, t2))
 			normal := gameObj.updatedNormals[idxPol]
 			res := Dot(cameraDirection, normal)
 
-			fmt.Println("PS ", p1, p2, p3, normal, res)
+			points := []sdl.Point{
+				{X: int32(p1.X), Y: int32(p1.Y)},
+				{X: int32(p2.X), Y: int32(p2.Y)},
+				{X: int32(p3.X), Y: int32(p3.Y)},
+			}
 
-			// Only draw the face if it's visible (res < 0 means the face is facing the camera)
 			if res > 0 {
-				points = append(points, sdl.Point{X: int32(p1.X), Y: int32(p1.Y)})
-				points = append(points, sdl.Point{X: int32(p2.X), Y: int32(p2.Y)})
+				for i := range points {
+					_p1 := points[i]
+					_p2 := points[0]
+					if i != len(points)-1 {
+						_p2 = points[i+1]
+					}
 
-				points = append(points, sdl.Point{X: int32(p2.X), Y: int32(p2.Y)})
-				points = append(points, sdl.Point{X: int32(p3.X), Y: int32(p3.Y)})
+					line := getLine(_p1, _p2)
+					uniquePoints[line]++
+				}
 
-				points = append(points, sdl.Point{X: int32(p3.X), Y: int32(p3.Y)})
-				points = append(points, sdl.Point{X: int32(p1.X), Y: int32(p1.Y)})
+				color := gameObj.colorMap[idxPol]
+				vertices := []sdl.Vertex{
+					vertexFromPoint(p1, color),
+					vertexFromPoint(p2, color),
+					vertexFromPoint(p3, color),
+				}
+				colorPoints = append(colorPoints, vertices)
+
 			}
 		}
-		fmt.Println("PS end")
 	}
 
-	if len(points) > 0 {
-		if err := renderer.DrawLines(points); err != nil {
+	for line := range uniquePoints {
+		if err := renderer.DrawLine(line.p1.X, line.p1.Y, line.p2.X, line.p2.Y); err != nil {
 			fmt.Printf("Error drawing lines: %v\n", err)
 		}
 	}
+
+	for _, vertices := range colorPoints {
+		renderer.RenderGeometry(nil, vertices, nil)
+
+	}
+
 	renderer.Present()
 }

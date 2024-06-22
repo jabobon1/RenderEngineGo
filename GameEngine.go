@@ -57,7 +57,7 @@ func initGameEngine(gameObjects *[]GameObject3D, width, heigh int32, fov float64
 
 	fovRadV, fovRadH := getFovVH(float64(width), float64(heigh), fov)
 
-	camera := Camera{Vector3D{0, 0, 20},
+	camera := Camera{Vector3D{0, 0, 10},
 		Vector3D{0, 0, 0},
 		fovRadV,
 		fovRadH,
