@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"renderEngineGo/pkg" // Import the pkg package
+	"renderEngineGo/pkg"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
