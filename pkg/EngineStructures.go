@@ -75,6 +75,21 @@ type GameObject3D struct {
 	Size            Vector3D
 }
 
+func (gm GameObject3D) GetMinMaxPointsOnScreen() (float64, float64, float64, float64) {
+	minX, maxX, minY, maxY := float64(math.Inf(1)), float64(0), float64(math.Inf(1)), float64(0)
+
+	for _, vert := range gm.updatedVertices {
+		minX = math.Min(vert.X, minX)
+		minY = math.Min(vert.Y, minY)
+
+		maxX = math.Max(vert.X, maxX)
+		maxY = math.Max(vert.Y, maxY)
+	}
+
+	return minX, maxX, minY, maxY
+
+}
+
 type Matrix4x4 [4][4]float64
 
 func (m1 Matrix4x4) Multiply(m2 Matrix4x4) Matrix4x4 {
@@ -228,8 +243,6 @@ func vertexFromPoint(p Vector3D, color sdl.Color) sdl.Vertex {
 }
 
 func (c *Camera) DrawObjects(renderer *sdl.Renderer, gameObjects *[]GameObject3D) {
-	renderer.SetDrawColor(WHITE.R, WHITE.G, WHITE.B, WHITE.A)
-	renderer.Clear()
 	renderer.SetDrawColor(BLACK.R, BLACK.G, BLACK.B, BLACK.A)
 
 	colorPoints := make([][]sdl.Vertex, 0)
@@ -288,5 +301,4 @@ func (c *Camera) DrawObjects(renderer *sdl.Renderer, gameObjects *[]GameObject3D
 
 	}
 
-	renderer.Present()
 }

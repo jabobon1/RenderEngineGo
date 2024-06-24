@@ -91,13 +91,14 @@ func (e *GameEngine) GetGameObject() *GameObject3D {
 
 }
 
-func (e *GameEngine) AddGameObj(gameObject GameObject3D) {
+func (e GameEngine) AddGameObj(gameObject GameObject3D) {
 	*e.GameObjects = append(*e.GameObjects, gameObject)
 
 }
 
 type GameObjectInterface interface {
 	DrawObjects()
+	AddGameObj(GameObject3D)
 	Update()
 	HandleKeyBoardPress(event sdl.Event) bool
 }

@@ -9,8 +9,7 @@ import (
 )
 
 const (
-	FONT_SIZE = 24 // Increased font size
-
+	FONT_SIZE = 24
 )
 
 type Button struct {
@@ -22,57 +21,17 @@ type Button struct {
 	IsHovered  bool
 }
 
-type SceneObject struct {
-	Type     string
-	Position pkg.Vector3D
-	Rotation pkg.Vector3D
-	Scale    pkg.Vector3D
-}
-
 type SceneEditor struct {
 	Renderer         *sdl.Renderer
 	Window           *sdl.Window
 	Buttons          []Button
-	Objects          []SceneObject
+	Objects          []pkg.GameObject3D
 	Font             *ttf.Font
-	AvailableFigures []string
+	AvailableFigures map[string]func(pkg.Vector3D) pkg.GameObject3D
 	ShowFiguresList  bool
-}
-
-func NewSceneEditor() (*SceneEditor, error) {
-	if err := sdl.Init(sdl.INIT_VIDEO); err != nil {
-		return nil, fmt.Errorf("failed to initialize SDL: %v", err)
-	}
-
-	if err := ttf.Init(); err != nil {
-		return nil, fmt.Errorf("failed to initialize TTF: %v", err)
-	}
-
-	window, err := sdl.CreateWindow("3D Scene Editor", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, sdl.WINDOW_SHOWN)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create window: %v", err)
-	}
-
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create renderer: %v", err)
-	}
-
-	font, err := ttf.OpenFont("/usr/share/fonts/opentype/unifont/unifont.otf", FONT_SIZE)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load font: %v", err)
-	}
-
-	editor := &SceneEditor{
-		Renderer:         renderer,
-		Window:           window,
-		Font:             font,
-		AvailableFigures: []string{"Cube", "Sphere", "Pyramid", "Cylinder"},
-	}
-
-	editor.initializeButtons()
-
-	return editor, nil
+	AddGameObj       func(pkg.GameObject3D)
+	SelectedObject   *pkg.GameObject3D
+	EditMode         string // "position", "rotation", "scale"
 }
 
 func (e *SceneEditor) initializeButtons() {
@@ -87,9 +46,9 @@ func (e *SceneEditor) initializeButtons() {
 		e.Buttons = append(e.Buttons, Button{
 			Rect:       sdl.Rect{X: startX + int32(i)*(buttonWidth+spacing), Y: spacing, W: buttonWidth, H: buttonHeight},
 			Text:       text,
-			Color:      sdl.Color{R: 70, G: 130, B: 180, A: 255},  // Steel Blue
-			HoverColor: sdl.Color{R: 100, G: 149, B: 237, A: 255}, // Cornflower Blue
-			TextColor:  sdl.Color{R: 255, G: 255, B: 255, A: 255}, // White
+			Color:      sdl.Color{R: 70, G: 130, B: 180, A: 255},
+			HoverColor: sdl.Color{R: 100, G: 149, B: 237, A: 255},
+			TextColor:  sdl.Color{R: 255, G: 255, B: 255, A: 255},
 		})
 	}
 }
@@ -115,12 +74,10 @@ func (e *SceneEditor) drawText(text string, x, y int32, color sdl.Color) error {
 
 func (e *SceneEditor) drawButtons() {
 	for _, button := range e.Buttons {
-		// Draw button shadow
 		shadowRect := sdl.Rect{X: button.Rect.X + 2, Y: button.Rect.Y + 2, W: button.Rect.W, H: button.Rect.H}
 		e.Renderer.SetDrawColor(0, 0, 0, 100)
 		e.Renderer.FillRect(&shadowRect)
 
-		// Draw button
 		if button.IsHovered {
 			e.Renderer.SetDrawColor(button.HoverColor.R, button.HoverColor.G, button.HoverColor.B, button.HoverColor.A)
 		} else {
@@ -128,11 +85,9 @@ func (e *SceneEditor) drawButtons() {
 		}
 		e.Renderer.FillRect(&button.Rect)
 
-		// Draw button border
 		e.Renderer.SetDrawColor(255, 255, 255, 255)
 		e.Renderer.DrawRect(&button.Rect)
 
-		// Draw button text
 		textWidth, _, _ := e.Font.SizeUTF8(button.Text)
 		textX := button.Rect.X + (button.Rect.W-int32(textWidth))/2
 		textY := button.Rect.Y + (button.Rect.H-int32(e.Font.Height()))/2
@@ -150,37 +105,43 @@ func (e *SceneEditor) drawFiguresList() {
 	listWidth := e.Buttons[0].Rect.W
 	listHeight := int32(len(e.AvailableFigures)*30 + 10)
 
-	// Draw list background
 	e.Renderer.SetDrawColor(240, 240, 240, 255)
 	e.Renderer.FillRect(&sdl.Rect{X: listX, Y: listY, W: listWidth, H: listHeight})
 
-	// Draw list border
 	e.Renderer.SetDrawColor(70, 130, 180, 255)
 	e.Renderer.DrawRect(&sdl.Rect{X: listX, Y: listY, W: listWidth, H: listHeight})
 
-	for i, figure := range e.AvailableFigures {
+	i := 0
+	for figure := range e.AvailableFigures {
 		e.drawText(figure, listX+10, listY+int32(i*30)+10, sdl.Color{R: 0, G: 0, B: 0, A: 255})
+		i++
 	}
-}
-
-func (e *SceneEditor) handleEvents() bool {
-	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		switch t := event.(type) {
-		case *sdl.QuitEvent:
-			return false
-		case *sdl.MouseMotionEvent:
-			e.handleMouseMotion(t)
-		case *sdl.MouseButtonEvent:
-			e.handleMouseClick(t)
-		}
-	}
-	return true
 }
 
 func (e *SceneEditor) handleMouseMotion(event *sdl.MouseMotionEvent) {
 	for i := range e.Buttons {
 		e.Buttons[i].IsHovered = event.X >= e.Buttons[i].Rect.X && event.X < e.Buttons[i].Rect.X+e.Buttons[i].Rect.W &&
 			event.Y >= e.Buttons[i].Rect.Y && event.Y < e.Buttons[i].Rect.Y+e.Buttons[i].Rect.H
+	}
+
+	if e.SelectedObject != nil && e.EditMode != "" {
+		fmt.Println("selected", e.EditMode)
+
+		dx := float64(event.XRel) * 0.01
+		dy := float64(event.YRel) * 0.01
+
+		switch e.EditMode {
+		case "position":
+			e.SelectedObject.Position.X += dx
+			e.SelectedObject.Position.Y -= dy
+		case "rotation":
+			e.SelectedObject.Rotation.X += dy
+			e.SelectedObject.Rotation.Y += dx
+		case "scale":
+			e.SelectedObject.Size.X += dx
+			e.SelectedObject.Size.Y += dy
+			e.SelectedObject.Size.Z += (dx + dy) / 2
+		}
 	}
 }
 
@@ -204,7 +165,14 @@ func (e *SceneEditor) handleMouseClick(event *sdl.MouseButtonEvent) {
 				event.Y >= listY && event.Y < listY+listHeight {
 				selectedIndex := (event.Y - listY - 5) / 30
 				if selectedIndex >= 0 && int(selectedIndex) < len(e.AvailableFigures) {
-					e.addObject(e.AvailableFigures[selectedIndex])
+					figureKeys := make([]string, 0, len(e.AvailableFigures))
+					for k := range e.AvailableFigures {
+						figureKeys = append(figureKeys, k)
+					}
+					getFigure := e.AvailableFigures[figureKeys[selectedIndex]]
+					newObject := getFigure(pkg.Vector3D{1, 1, 1})
+					e.AddGameObj(newObject)
+					e.Objects = append(e.Objects, newObject)
 					e.ShowFiguresList = false
 				}
 				return
@@ -212,6 +180,23 @@ func (e *SceneEditor) handleMouseClick(event *sdl.MouseButtonEvent) {
 		}
 
 		e.ShowFiguresList = false
+		// Object selection
+		for i := range e.Objects {
+			obj := e.Objects[i]
+			minX, maxX, minY, maxY := obj.GetMinMaxPointsOnScreen()
+			fmt.Println(minX, maxX, minY, maxY, event.X, event.Y)
+
+			// Implement object selection logic here
+			// This is a simplified example; you may need to implement proper 3D picking
+			if event.X >= int32(minX) && event.X < int32(maxX) &&
+				event.Y >= int32(minY) && event.Y < int32(maxY) {
+				e.SelectedObject = &e.Objects[i]
+				fmt.Println("SELECTED", e.Objects[i])
+				return
+			}
+		}
+
+		e.SelectedObject = nil
 	}
 }
 
@@ -219,45 +204,34 @@ func (e *SceneEditor) handleButtonClick(buttonIndex int) {
 	switch buttonIndex {
 	case 0: // Add Object
 		e.ShowFiguresList = !e.ShowFiguresList
-	case 1:
-		// Implement change position logic
-	case 2:
-		// Implement change rotation logic
-	case 3:
-		// Implement change scale logic
+		e.EditMode = ""
+	case 1: // Change Position
+		e.EditMode = "position"
+	case 2: // Change Rotation
+		e.EditMode = "rotation"
+	case 3: // Change Scale
+		e.EditMode = "scale"
 	}
 }
 
-func (e *SceneEditor) addObject(objectType string) {
-	newObject := SceneObject{
-		Type:     objectType,
-		Position: pkg.Vector3D{X: 0, Y: 0, Z: 0},
-		Rotation: pkg.Vector3D{X: 0, Y: 0, Z: 0},
-		Scale:    pkg.Vector3D{X: 1, Y: 1, Z: 1},
-	}
-	e.Objects = append(e.Objects, newObject)
-	fmt.Printf("Added %s to the scene\n", objectType)
-}
+func (e *SceneEditor) DrawScene() {
+	e.Renderer.SetDrawColor(245, 245, 245, 255)
+	e.drawButtons()
+	e.drawFiguresList()
 
-func (e *SceneEditor) Run() {
-	running := true
-	for running {
-		running = e.handleEvents()
-
-		e.Renderer.SetDrawColor(245, 245, 245, 255) // Light gray background
-		e.Renderer.Clear()
-
-		e.drawButtons()
-		e.drawFiguresList()
-
-		e.Renderer.Present()
+	// Draw selection outline for the selected object
+	if e.SelectedObject != nil {
+		e.Renderer.SetDrawColor(255, 255, 0, 255) // Yellow outline
+		rect := sdl.Rect{
+			X: int32(e.SelectedObject.Position.X) - 2,
+			Y: int32(e.SelectedObject.Position.Y) - 2,
+			W: int32(e.SelectedObject.Size.X) + 4,
+			H: int32(e.SelectedObject.Size.Y) + 4,
+		}
+		e.Renderer.DrawRect(&rect)
 	}
 }
 
 func (e *SceneEditor) Cleanup() {
 	e.Font.Close()
-	e.Renderer.Destroy()
-	e.Window.Destroy()
-	ttf.Quit()
-	sdl.Quit()
 }

@@ -110,7 +110,7 @@ func main() {
 	defer gameEngine.Close()
 
 	myEngine := MyGameEngine{*gameEngine}
-	cube := pkg.GetCube3D(1)
+	cube := pkg.GetCube3D(pkg.Vector3D{1, 1, 1})
 	// cube3 := getCube3D(1)
 	// cube3.position.Z += 3
 	// cube := getRectangle3D(Vector3D{2, 1, 3})
