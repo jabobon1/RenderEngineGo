@@ -1,4 +1,4 @@
-package main
+package pkg
 
 import (
 	"fmt"
@@ -23,17 +23,17 @@ type AngleVelocity struct {
 	currentAxeIdx                   int
 }
 
-func (aV *AngleVelocity) updateAngles() {
+func (aV *AngleVelocity) UpdateAngles() {
 	aV.angleX = math.Mod(aV.angleX+aV.angleXVel, 360)
 	aV.angleY = math.Mod(aV.angleY+aV.angleYVel, 360)
 	aV.angleZ = math.Mod(aV.angleZ+aV.angleZVel, 360)
 }
-func (aV *AngleVelocity) changeAxe() {
+func (aV *AngleVelocity) ChangeAxe() {
 	aV.currentAxeIdx = (aV.currentAxeIdx + 1) % len(axes)
 
 }
 
-func (aV *AngleVelocity) getAxName() string {
+func (aV *AngleVelocity) GetAxName() string {
 	switch axes[aV.currentAxeIdx] {
 	case xAxe:
 		return "X"
@@ -45,7 +45,7 @@ func (aV *AngleVelocity) getAxName() string {
 	return ""
 }
 
-func (aV *AngleVelocity) changeAngleVelociity(up bool) {
+func (aV *AngleVelocity) ChangeAngleVelociity(up bool) {
 	var adder float64 = 1
 	if !up {
 		adder = -1
@@ -69,10 +69,10 @@ type GameObject3D struct {
 	normalMap       []Vector3D
 	colorMap        []sdl.Color
 	indicies        *[][]int
-	angles          *AngleVelocity
-	position        *Vector3D
-	rotation        *Vector3D
-	size            Vector3D
+	Angles          *AngleVelocity
+	Position        *Vector3D
+	Rotation        *Vector3D
+	Size            Vector3D
 }
 
 type Matrix4x4 [4][4]float64
@@ -111,16 +111,16 @@ type Camera struct {
 	fovRadH  float64
 }
 
-func (c *Camera) changePosition(newPosition Vector3D) {
+func (c *Camera) ChangePosition(newPosition Vector3D) {
 	c.position = Add(c.position, newPosition)
 }
 
-func (c *Camera) updateObject(gameObject *GameObject3D) {
+func (c *Camera) UpdateObject(gameObject *GameObject3D) {
 	// // // Combine the rotation matrices
 	rotationMatrix := XYZRotationMatrix(
-		gameObject.angles.angleX,
-		gameObject.angles.angleY,
-		gameObject.angles.angleZ)
+		gameObject.Angles.angleX,
+		gameObject.Angles.angleY,
+		gameObject.Angles.angleZ)
 
 	for i := range gameObject.updatedNormals {
 		rotatedNomals := rotationMatrix.MultiplyVector(
@@ -139,22 +139,28 @@ func (c *Camera) updateObject(gameObject *GameObject3D) {
 		vec4D := Vector4D{vertex.X, vertex.Y, vertex.Z, 1}
 		rotatedMatrix := rotationMatrix.MultiplyVector(vec4D)
 
-		y := rotatedMatrix.Y - c.position.Y - gameObject.position.Y
-		x := rotatedMatrix.X - c.position.X - gameObject.position.X
-		z := rotatedMatrix.Z - c.position.Z - gameObject.position.Z
+		y := rotatedMatrix.Y - c.position.Y - gameObject.Position.Y
+		x := rotatedMatrix.X - c.position.X - gameObject.Position.X
+		z := rotatedMatrix.Z - c.position.Z - gameObject.Position.Z
 
-		if math.Abs(z) < zThreshold {
-			if z < 0 {
-				z = -zThreshold
-			} else {
-				z = zThreshold
-			}
-		}
+		// if math.Abs(z) < zThreshold {
+		// 	if z < 0 {
+		// 		z = -zThreshold
+		// 	} else {
+		// 		z = zThreshold
+		// 	}
+		// }
 		// Update the vertex in the updatedVertices slice
 		gameObject.updatedVertices[i] = c.projectedXY(x, y, z)
 	}
 
 }
+
+const (
+	WIDTH  int32 = 2000
+	HEIGHT int32 = 1500
+)
+
 func (c *Camera) projectedXY(x, y, z float64) Vector3D {
 	projectedX := x * c.fovRadH
 	projectedY := y * c.fovRadV
@@ -221,7 +227,7 @@ func vertexFromPoint(p Vector3D, color sdl.Color) sdl.Vertex {
 
 }
 
-func (c *Camera) drawObjects(renderer *sdl.Renderer, gameObjects *[]GameObject3D) {
+func (c *Camera) DrawObjects(renderer *sdl.Renderer, gameObjects *[]GameObject3D) {
 	renderer.SetDrawColor(WHITE.R, WHITE.G, WHITE.B, WHITE.A)
 	renderer.Clear()
 	renderer.SetDrawColor(BLACK.R, BLACK.G, BLACK.B, BLACK.A)
@@ -232,7 +238,7 @@ func (c *Camera) drawObjects(renderer *sdl.Renderer, gameObjects *[]GameObject3D
 	for _, gameObj := range *gameObjects {
 		for idxPol, polygons := range *gameObj.indicies {
 			// we add normal here because object pos != face pos, here we can take face pos by add size * normal and add obj pos
-			cameraDirection := Normalize(Sub(*gameObj.position, Add(c.position, Mult(gameObj.size, gameObj.updatedNormals[idxPol]))))
+			cameraDirection := Normalize(Sub(*gameObj.Position, Add(c.position, Mult(gameObj.Size, gameObj.updatedNormals[idxPol]))))
 
 			p1 := gameObj.updatedVertices[polygons[0]]
 			p2 := gameObj.updatedVertices[polygons[1]]

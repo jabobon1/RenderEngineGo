@@ -1,8 +1,8 @@
-package main
+package pkg
 
 import "github.com/veandco/go-sdl2/sdl"
 
-func getRectangle3D(size Vector3D) GameObject3D {
+func GetRectangle3D(size Vector3D) GameObject3D {
 	vertices := []Vector3D{
 		{-size.X, -size.Y, -size.Z}, // 0
 		{size.X, -size.Y, -size.Z},  // 1
@@ -51,8 +51,8 @@ func getRectangle3D(size Vector3D) GameObject3D {
 	return GameObject3D{&vertices, rotatedVertices, updatedNormals, normalMap, colorMap, &indices, &angleVelocity, &position, &rotation, size}
 }
 
-func getCube3D(size float64) GameObject3D {
-	return getRectangle3D(Vector3D{size, size, size})
+func GetCube3D(size float64) GameObject3D {
+	return GetRectangle3D(Vector3D{size, size, size})
 }
 
 // func getPyramid3D(size float64) GameObject3D {

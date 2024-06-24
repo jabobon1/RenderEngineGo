@@ -1,4 +1,4 @@
-package main
+package pkg
 
 import (
 	"fmt"
@@ -9,43 +9,43 @@ import (
 )
 
 type GameEngine struct {
-	gameObjects *[]GameObject3D
-	window      *sdl.Window
-	renderer    *sdl.Renderer
-	camera      *Camera
+	GameObjects *[]GameObject3D
+	Window      *sdl.Window
+	Renderer    *sdl.Renderer
+	Camera      *Camera
 }
 
 func (g *GameEngine) Close() {
 	// выполнить очистку или освобождение ресурсов
-	g.renderer.Destroy()
-	g.window.Destroy()
+	g.Renderer.Destroy()
+	g.Window.Destroy()
 	sdl.Quit()
 }
 
-func initGameEngine(gameObjects *[]GameObject3D, width, heigh int32, fov float64) (*GameEngine, error) {
+func InitGameEngine(gameObjects *[]GameObject3D, width, heigh int32, fov float64) (*GameEngine, error) {
 	if err := sdl.Init(sdl.INIT_VIDEO); err != nil {
 		fmt.Println("Error initializing SDL:", err)
 		return nil, err
 	}
 
-	window, err := sdl.CreateWindow("Cube", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, width, heigh, sdl.WINDOW_SHOWN)
+	Window, err := sdl.CreateWindow("Cube", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, width, heigh, sdl.WINDOW_SHOWN)
 	if err != nil {
-		fmt.Println("Error creating window:", err)
+		fmt.Println("Error creating Window:", err)
 		sdl.Quit()
 		return nil, err
 	}
 
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	Renderer, err := sdl.CreateRenderer(Window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
-		fmt.Println("Error creating renderer:", err)
-		window.Destroy()
+		fmt.Println("Error creating Renderer:", err)
+		Window.Destroy()
 		sdl.Quit()
 		return nil, err
 	}
 	if err := ttf.Init(); err != nil {
 		fmt.Println("Error initializing SDL_ttf:", err)
-		renderer.Destroy()
-		window.Destroy()
+		Renderer.Destroy()
+		Window.Destroy()
 		sdl.Quit()
 		return nil, err
 
@@ -63,7 +63,7 @@ func initGameEngine(gameObjects *[]GameObject3D, width, heigh int32, fov float64
 		fovRadH,
 	}
 
-	return &GameEngine{gameObjects, window, renderer, &camera}, nil
+	return &GameEngine{gameObjects, Window, Renderer, &camera}, nil
 
 }
 
@@ -75,49 +75,49 @@ func getFovVH(width, heigh, fov float64) (float64, float64) {
 }
 
 type GameObject3DAbs interface {
-	update()
+	Update()
 }
 
-func (e *GameEngine) update() {
+func (e *GameEngine) Update() {
 	fmt.Println("Original update has been called")
 
 }
 
-func (e *GameEngine) getGameObject() *GameObject3D {
-	for _, gObg := range *e.gameObjects {
+func (e *GameEngine) GetGameObject() *GameObject3D {
+	for _, gObg := range *e.GameObjects {
 		return &gObg
 	}
 	return nil
 
 }
 
-func (e *GameEngine) addGameObj(gameObject GameObject3D) {
-	*e.gameObjects = append(*e.gameObjects, gameObject)
+func (e *GameEngine) AddGameObj(gameObject GameObject3D) {
+	*e.GameObjects = append(*e.GameObjects, gameObject)
 
 }
 
 type GameObjectInterface interface {
-	drawObjects()
-	update()
-	handleKeyBoardPress(event sdl.Event) bool
+	DrawObjects()
+	Update()
+	HandleKeyBoardPress(event sdl.Event) bool
 }
 
-func (e GameEngine) drawObjects() {
-	e.camera.drawObjects(e.renderer, e.gameObjects)
+func (e GameEngine) DrawObjects() {
+	e.Camera.DrawObjects(e.Renderer, e.GameObjects)
 
 }
 func EngineUpdate(e GameObjectInterface) {
-	e.update()
-	e.drawObjects()
+	e.Update()
+	e.DrawObjects()
 
 }
 
-func run(fps *uint32, e GameObjectInterface) {
+func Run(fps *uint32, e GameObjectInterface) {
 	for {
 		EngineUpdate(e)
 		stop := false
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			stop = e.handleKeyBoardPress(event)
+			stop = e.HandleKeyBoardPress(event)
 		}
 		if stop {
 			return

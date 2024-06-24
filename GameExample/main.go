@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"renderEngineGo/pkg" // Import the pkg package
+
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -34,11 +36,11 @@ func updateFPS(up bool) {
 }
 
 type MyGameEngine struct {
-	GameEngine
+	pkg.GameEngine
 }
 
-func (e MyGameEngine) handleKeyBoardPress(event sdl.Event) bool {
-	cube := e.getGameObject()
+func (e MyGameEngine) HandleKeyBoardPress(event sdl.Event) bool {
+	cube := e.GetGameObject()
 
 	switch t := event.(type) {
 	case *sdl.QuitEvent:
@@ -49,23 +51,23 @@ func (e MyGameEngine) handleKeyBoardPress(event sdl.Event) bool {
 		} else if t.Keysym.Sym == sdl.K_DOWN && t.State == sdl.PRESSED {
 			updateFPS(false)
 		} else if t.Keysym.Sym == sdl.K_SPACE && t.State == sdl.PRESSED {
-			cube.angles.changeAxe()
+			cube.Angles.ChangeAxe()
 		} else if t.Keysym.Sym == sdl.K_LEFT && t.State == sdl.PRESSED {
-			cube.angles.changeAngleVelociity(false)
+			cube.Angles.ChangeAngleVelociity(false)
 		} else if t.Keysym.Sym == sdl.K_RIGHT && t.State == sdl.PRESSED {
-			cube.angles.changeAngleVelociity(true)
+			cube.Angles.ChangeAngleVelociity(true)
 		} else if t.Keysym.Sym == sdl.K_a && t.State == sdl.PRESSED {
-			e.camera.changePosition(Vector3D{MOVE_SPEED, 0, 0})
+			e.Camera.ChangePosition(pkg.Vector3D{MOVE_SPEED, 0, 0})
 		} else if t.Keysym.Sym == sdl.K_d && t.State == sdl.PRESSED {
-			e.camera.changePosition(Vector3D{-MOVE_SPEED, 0, 0})
+			e.Camera.ChangePosition(pkg.Vector3D{-MOVE_SPEED, 0, 0})
 		} else if t.Keysym.Sym == sdl.K_w && t.State == sdl.PRESSED {
-			e.camera.changePosition(Vector3D{0, -MOVE_SPEED, 0})
+			e.Camera.ChangePosition(pkg.Vector3D{0, -MOVE_SPEED, 0})
 		} else if t.Keysym.Sym == sdl.K_s && t.State == sdl.PRESSED {
-			e.camera.changePosition(Vector3D{0, MOVE_SPEED, 0})
+			e.Camera.ChangePosition(pkg.Vector3D{0, MOVE_SPEED, 0})
 		} else if t.Keysym.Sym == sdl.K_KP_PLUS && t.State == sdl.PRESSED {
-			e.camera.changePosition(Vector3D{0, 0, -MOVE_SPEED})
+			e.Camera.ChangePosition(pkg.Vector3D{0, 0, -MOVE_SPEED})
 		} else if t.Keysym.Sym == sdl.K_MINUS && t.State == sdl.PRESSED {
-			e.camera.changePosition(Vector3D{0, 0, MOVE_SPEED})
+			e.Camera.ChangePosition(pkg.Vector3D{0, 0, MOVE_SPEED})
 		}
 		// else if t.Keysym.Sym == sdl.K_a && t.State == sdl.PRESSED {
 		// 	cube.position.X -= MOVE_SPEED
@@ -80,12 +82,12 @@ func (e MyGameEngine) handleKeyBoardPress(event sdl.Event) bool {
 	return false
 }
 
-func (e MyGameEngine) update() {
+func (e MyGameEngine) Update() {
 	// Переопределенная реализация метода update()
 	drawedUi := false
-	for _, gamgeObj := range *e.gameObjects {
-		gamgeObj.angles.updateAngles()
-		e.camera.updateObject(&gamgeObj)
+	for _, gamgeObj := range *e.GameObjects {
+		gamgeObj.Angles.UpdateAngles()
+		e.Camera.UpdateObject(&gamgeObj)
 		if !drawedUi {
 			// err := drawUI(e.renderer, gamgeObj.angles)
 			// if err != nil {
@@ -95,12 +97,12 @@ func (e MyGameEngine) update() {
 			drawedUi = true
 		}
 	}
-	e.camera.drawObjects(e.renderer, e.gameObjects)
+	e.Camera.DrawObjects(e.Renderer, e.GameObjects)
 
 }
 
 func main() {
-	gameEngine, err := initGameEngine(nil, WIDTH, HEIGHT, FOW)
+	gameEngine, err := pkg.InitGameEngine(nil, WIDTH, HEIGHT, FOW)
 	if err != nil {
 		fmt.Println("Error creating GameEngine:", err)
 		return
@@ -108,7 +110,7 @@ func main() {
 	defer gameEngine.Close()
 
 	myEngine := MyGameEngine{*gameEngine}
-	cube := getCube3D(1)
+	cube := pkg.GetCube3D(1)
 	// cube3 := getCube3D(1)
 	// cube3.position.Z += 3
 	// cube := getRectangle3D(Vector3D{2, 1, 3})
@@ -118,9 +120,9 @@ func main() {
 	// cube := getTorus3D(10, 2, 50, 20)
 
 	// Call the getLandscape3D function with the provided parameters
-	myEngine.addGameObj(cube)
+	myEngine.AddGameObj(cube)
 	// myEngine.addGameObj(cube3)
 	// myEngine.addGameObj(cube4)
-	fmt.Println("myEngine", myEngine.gameObjects)
-	run(&FPS, myEngine)
+	fmt.Println("myEngine", myEngine.GameObjects)
+	pkg.Run(&FPS, myEngine)
 }
