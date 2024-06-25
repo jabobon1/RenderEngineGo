@@ -57,9 +57,9 @@ func (e MyGameEngine) HandleKeyBoardPress(event sdl.Event) bool {
 		} else if t.Keysym.Sym == sdl.K_RIGHT && t.State == sdl.PRESSED {
 			cube.Angles.ChangeAngleVelociity(true)
 		} else if t.Keysym.Sym == sdl.K_a && t.State == sdl.PRESSED {
-			e.Camera.ChangePosition(pkg.Vector3D{MOVE_SPEED, 0, 0})
-		} else if t.Keysym.Sym == sdl.K_d && t.State == sdl.PRESSED {
 			e.Camera.ChangePosition(pkg.Vector3D{-MOVE_SPEED, 0, 0})
+		} else if t.Keysym.Sym == sdl.K_d && t.State == sdl.PRESSED {
+			e.Camera.ChangePosition(pkg.Vector3D{MOVE_SPEED, 0, 0})
 		} else if t.Keysym.Sym == sdl.K_w && t.State == sdl.PRESSED {
 			e.Camera.ChangePosition(pkg.Vector3D{0, -MOVE_SPEED, 0})
 		} else if t.Keysym.Sym == sdl.K_s && t.State == sdl.PRESSED {
@@ -97,8 +97,10 @@ func (e MyGameEngine) Update() {
 			drawedUi = true
 		}
 	}
+	e.Renderer.SetDrawColor(pkg.WHITE.R, pkg.WHITE.G, pkg.WHITE.B, pkg.WHITE.A)
+	e.Renderer.Clear()
 	e.Camera.DrawObjects(e.Renderer, e.GameObjects)
-
+	e.Renderer.Present()
 }
 
 func main() {
@@ -120,6 +122,8 @@ func main() {
 	// cube := getTorus3D(10, 2, 50, 20)
 
 	// Call the getLandscape3D function with the provided parameters
+	cube.Position.X -= 3
+
 	myEngine.AddGameObj(cube)
 	// myEngine.addGameObj(cube3)
 	// myEngine.addGameObj(cube4)

@@ -35,9 +35,9 @@ func (e MyGameEngine) HandleKeyBoardPress(event sdl.Event) bool {
 		e.sceneEditor.handleMouseClick(t)
 	case *sdl.KeyboardEvent:
 		if t.Keysym.Sym == sdl.K_a && t.State == sdl.PRESSED {
-			e.Camera.ChangePosition(pkg.Vector3D{MOVE_SPEED, 0, 0})
-		} else if t.Keysym.Sym == sdl.K_d && t.State == sdl.PRESSED {
 			e.Camera.ChangePosition(pkg.Vector3D{-MOVE_SPEED, 0, 0})
+		} else if t.Keysym.Sym == sdl.K_d && t.State == sdl.PRESSED {
+			e.Camera.ChangePosition(pkg.Vector3D{MOVE_SPEED, 0, 0})
 		} else if t.Keysym.Sym == sdl.K_w && t.State == sdl.PRESSED {
 			e.Camera.ChangePosition(pkg.Vector3D{0, -MOVE_SPEED, 0})
 		} else if t.Keysym.Sym == sdl.K_s && t.State == sdl.PRESSED {

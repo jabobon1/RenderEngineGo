@@ -139,9 +139,10 @@ func (c *Camera) UpdateObject(gameObject *GameObject3D) {
 
 	for i := range gameObject.updatedNormals {
 		rotatedNomals := rotationMatrix.MultiplyVector(
-			Vector4D{gameObject.normalMap[i].X,
+			Vector4D{-gameObject.normalMap[i].X,
 				gameObject.normalMap[i].Y,
-				gameObject.normalMap[i].Z, 1})
+				gameObject.normalMap[i].Z,
+				1})
 
 		gameObject.updatedNormals[i] = Normalize(Vector3D{rotatedNomals.X, rotatedNomals.Y, rotatedNomals.Z})
 	}
@@ -155,7 +156,7 @@ func (c *Camera) UpdateObject(gameObject *GameObject3D) {
 		rotatedMatrix := rotationMatrix.MultiplyVector(vec4D)
 
 		y := rotatedMatrix.Y - c.position.Y - gameObject.Position.Y
-		x := rotatedMatrix.X - c.position.X - gameObject.Position.X
+		x := rotatedMatrix.X + c.position.X - gameObject.Position.X
 		z := rotatedMatrix.Z - c.position.Z - gameObject.Position.Z
 
 		// if math.Abs(z) < zThreshold {
@@ -249,9 +250,15 @@ func (c *Camera) DrawObjects(renderer *sdl.Renderer, gameObjects *[]GameObject3D
 	uniquePoints := make(map[LinePoints]int)
 
 	for _, gameObj := range *gameObjects {
+		fmt.Println("gameObj", gameObj.Position, "Camera", c.position)
+
 		for idxPol, polygons := range *gameObj.indicies {
 			// we add normal here because object pos != face pos, here we can take face pos by add size * normal and add obj pos
-			cameraDirection := Normalize(Sub(*gameObj.Position, Add(c.position, Mult(gameObj.Size, gameObj.updatedNormals[idxPol]))))
+			// cameraDirection := Normalize(Sub(*gameObj.Position, Add(c.position, Mult(gameObj.Size, gameObj.updatedNormals[idxPol]))))
+			pos1 := *gameObj.Position
+			pos2 := Add(c.position, Mult(gameObj.Size, gameObj.updatedNormals[idxPol]))
+
+			cameraDirection := Normalize(Sub(pos1, pos2))
 
 			p1 := gameObj.updatedVertices[polygons[0]]
 			p2 := gameObj.updatedVertices[polygons[1]]
@@ -259,6 +266,7 @@ func (c *Camera) DrawObjects(renderer *sdl.Renderer, gameObjects *[]GameObject3D
 
 			normal := gameObj.updatedNormals[idxPol]
 			res := Dot(cameraDirection, normal)
+			fmt.Println("cameraDirection", cameraDirection, "normal", normal, "res Dot", res)
 
 			points := []sdl.Point{
 				{X: int32(p1.X), Y: int32(p1.Y)},
@@ -298,7 +306,6 @@ func (c *Camera) DrawObjects(renderer *sdl.Renderer, gameObjects *[]GameObject3D
 
 	for _, vertices := range colorPoints {
 		renderer.RenderGeometry(nil, vertices, nil)
-
 	}
 
 }
