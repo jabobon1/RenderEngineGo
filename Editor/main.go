@@ -39,9 +39,9 @@ func (e MyGameEngine) HandleKeyBoardPress(event sdl.Event) bool {
 		} else if t.Keysym.Sym == sdl.K_d && t.State == sdl.PRESSED {
 			e.Camera.ChangePosition(pkg.Vector3D{MOVE_SPEED, 0, 0})
 		} else if t.Keysym.Sym == sdl.K_w && t.State == sdl.PRESSED {
-			e.Camera.ChangePosition(pkg.Vector3D{0, -MOVE_SPEED, 0})
-		} else if t.Keysym.Sym == sdl.K_s && t.State == sdl.PRESSED {
 			e.Camera.ChangePosition(pkg.Vector3D{0, MOVE_SPEED, 0})
+		} else if t.Keysym.Sym == sdl.K_s && t.State == sdl.PRESSED {
+			e.Camera.ChangePosition(pkg.Vector3D{0, -MOVE_SPEED, 0})
 		} else if t.Keysym.Sym == sdl.K_KP_PLUS && t.State == sdl.PRESSED {
 			e.Camera.ChangePosition(pkg.Vector3D{0, 0, -MOVE_SPEED})
 		} else if t.Keysym.Sym == sdl.K_MINUS && t.State == sdl.PRESSED {

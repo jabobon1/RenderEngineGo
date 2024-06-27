@@ -61,13 +61,13 @@ func (e MyGameEngine) HandleKeyBoardPress(event sdl.Event) bool {
 		} else if t.Keysym.Sym == sdl.K_d && t.State == sdl.PRESSED {
 			e.Camera.ChangePosition(pkg.Vector3D{MOVE_SPEED, 0, 0})
 		} else if t.Keysym.Sym == sdl.K_w && t.State == sdl.PRESSED {
-			e.Camera.ChangePosition(pkg.Vector3D{0, -MOVE_SPEED, 0})
-		} else if t.Keysym.Sym == sdl.K_s && t.State == sdl.PRESSED {
 			e.Camera.ChangePosition(pkg.Vector3D{0, MOVE_SPEED, 0})
+		} else if t.Keysym.Sym == sdl.K_s && t.State == sdl.PRESSED {
+			e.Camera.ChangePosition(pkg.Vector3D{0, -MOVE_SPEED, 0})
 		} else if t.Keysym.Sym == sdl.K_KP_PLUS && t.State == sdl.PRESSED {
-			e.Camera.ChangePosition(pkg.Vector3D{0, 0, -MOVE_SPEED})
-		} else if t.Keysym.Sym == sdl.K_MINUS && t.State == sdl.PRESSED {
 			e.Camera.ChangePosition(pkg.Vector3D{0, 0, MOVE_SPEED})
+		} else if t.Keysym.Sym == sdl.K_MINUS && t.State == sdl.PRESSED {
+			e.Camera.ChangePosition(pkg.Vector3D{0, 0, -MOVE_SPEED})
 		}
 		// else if t.Keysym.Sym == sdl.K_a && t.State == sdl.PRESSED {
 		// 	cube.position.X -= MOVE_SPEED
@@ -122,7 +122,9 @@ func main() {
 	// cube := getTorus3D(10, 2, 50, 20)
 
 	// Call the getLandscape3D function with the provided parameters
-	cube.Position.X -= 3
+	// cube.Position.X -= 3
+	cube.Position.Y -= 3
+	cube.Position.Z += 5
 
 	myEngine.AddGameObj(cube)
 	// myEngine.addGameObj(cube3)

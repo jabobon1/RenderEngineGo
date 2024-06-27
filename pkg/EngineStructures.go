@@ -140,8 +140,8 @@ func (c *Camera) UpdateObject(gameObject *GameObject3D) {
 	for i := range gameObject.updatedNormals {
 		rotatedNomals := rotationMatrix.MultiplyVector(
 			Vector4D{-gameObject.normalMap[i].X,
-				gameObject.normalMap[i].Y,
-				gameObject.normalMap[i].Z,
+				-gameObject.normalMap[i].Y,
+				-gameObject.normalMap[i].Z,
 				1})
 
 		gameObject.updatedNormals[i] = Normalize(Vector3D{rotatedNomals.X, rotatedNomals.Y, rotatedNomals.Z})
@@ -155,9 +155,9 @@ func (c *Camera) UpdateObject(gameObject *GameObject3D) {
 		vec4D := Vector4D{vertex.X, vertex.Y, vertex.Z, 1}
 		rotatedMatrix := rotationMatrix.MultiplyVector(vec4D)
 
-		y := rotatedMatrix.Y - c.position.Y - gameObject.Position.Y
+		y := rotatedMatrix.Y + c.position.Y - gameObject.Position.Y
 		x := rotatedMatrix.X + c.position.X - gameObject.Position.X
-		z := rotatedMatrix.Z - c.position.Z - gameObject.Position.Z
+		z := rotatedMatrix.Z + c.position.Z - gameObject.Position.Z
 
 		// if math.Abs(z) < zThreshold {
 		// 	if z < 0 {
