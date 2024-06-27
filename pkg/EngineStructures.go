@@ -172,6 +172,30 @@ func (c *Camera) UpdateObject(gameObject *GameObject3D) {
 
 }
 
+func (c *Camera) HandleCameraMove(t sdl.KeyboardEvent, moveSpeed float64) bool {
+	if t.Keysym.Sym == sdl.K_a && t.State == sdl.PRESSED {
+		c.ChangePosition(Vector3D{-moveSpeed, 0, 0})
+		return true
+	} else if t.Keysym.Sym == sdl.K_d && t.State == sdl.PRESSED {
+		c.ChangePosition(Vector3D{moveSpeed, 0, 0})
+		return true
+	} else if t.Keysym.Sym == sdl.K_w && t.State == sdl.PRESSED {
+		c.ChangePosition(Vector3D{0, moveSpeed, 0})
+		return true
+
+	} else if t.Keysym.Sym == sdl.K_s && t.State == sdl.PRESSED {
+		c.ChangePosition(Vector3D{0, -moveSpeed, 0})
+		return true
+	} else if t.Keysym.Sym == sdl.K_KP_PLUS && t.State == sdl.PRESSED {
+		c.ChangePosition(Vector3D{0, 0, moveSpeed})
+		return true
+	} else if t.Keysym.Sym == sdl.K_MINUS && t.State == sdl.PRESSED {
+		c.ChangePosition(Vector3D{0, 0, -moveSpeed})
+		return true
+	}
+	return false
+}
+
 const (
 	WIDTH  int32 = 2000
 	HEIGHT int32 = 1500

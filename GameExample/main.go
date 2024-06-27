@@ -46,7 +46,9 @@ func (e MyGameEngine) HandleKeyBoardPress(event sdl.Event) bool {
 	case *sdl.QuitEvent:
 		return true
 	case *sdl.KeyboardEvent:
-		if t.Keysym.Sym == sdl.K_UP && t.State == sdl.PRESSED {
+		if e.Camera.HandleCameraMove(*t, MOVE_SPEED) {
+
+		} else if t.Keysym.Sym == sdl.K_UP && t.State == sdl.PRESSED {
 			updateFPS(true)
 		} else if t.Keysym.Sym == sdl.K_DOWN && t.State == sdl.PRESSED {
 			updateFPS(false)
@@ -56,18 +58,6 @@ func (e MyGameEngine) HandleKeyBoardPress(event sdl.Event) bool {
 			cube.Angles.ChangeAngleVelociity(false)
 		} else if t.Keysym.Sym == sdl.K_RIGHT && t.State == sdl.PRESSED {
 			cube.Angles.ChangeAngleVelociity(true)
-		} else if t.Keysym.Sym == sdl.K_a && t.State == sdl.PRESSED {
-			e.Camera.ChangePosition(pkg.Vector3D{-MOVE_SPEED, 0, 0})
-		} else if t.Keysym.Sym == sdl.K_d && t.State == sdl.PRESSED {
-			e.Camera.ChangePosition(pkg.Vector3D{MOVE_SPEED, 0, 0})
-		} else if t.Keysym.Sym == sdl.K_w && t.State == sdl.PRESSED {
-			e.Camera.ChangePosition(pkg.Vector3D{0, MOVE_SPEED, 0})
-		} else if t.Keysym.Sym == sdl.K_s && t.State == sdl.PRESSED {
-			e.Camera.ChangePosition(pkg.Vector3D{0, -MOVE_SPEED, 0})
-		} else if t.Keysym.Sym == sdl.K_KP_PLUS && t.State == sdl.PRESSED {
-			e.Camera.ChangePosition(pkg.Vector3D{0, 0, MOVE_SPEED})
-		} else if t.Keysym.Sym == sdl.K_MINUS && t.State == sdl.PRESSED {
-			e.Camera.ChangePosition(pkg.Vector3D{0, 0, -MOVE_SPEED})
 		}
 		// else if t.Keysym.Sym == sdl.K_a && t.State == sdl.PRESSED {
 		// 	cube.position.X -= MOVE_SPEED

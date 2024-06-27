@@ -22,16 +22,17 @@ type Button struct {
 }
 
 type SceneEditor struct {
-	Renderer         *sdl.Renderer
-	Window           *sdl.Window
-	Buttons          []Button
-	Objects          []pkg.GameObject3D
-	Font             *ttf.Font
-	AvailableFigures map[string]func(pkg.Vector3D) pkg.GameObject3D
-	ShowFiguresList  bool
-	AddGameObj       func(pkg.GameObject3D)
-	SelectedObject   *pkg.GameObject3D
-	EditMode         string // "position", "rotation", "scale"
+	Renderer              *sdl.Renderer
+	Window                *sdl.Window
+	Buttons               []Button
+	Objects               []pkg.GameObject3D
+	Font                  *ttf.Font
+	AvailableFigures      map[string]func(pkg.Vector3D) pkg.GameObject3D
+	ShowFiguresList       bool
+	AddGameObj            func(pkg.GameObject3D)
+	SelectedObject        *pkg.GameObject3D
+	EditMode              string // "position", "rotation", "scale"
+	CoordinateDisplayRect sdl.Rect
 }
 
 func (e *SceneEditor) initializeButtons() {
@@ -118,31 +119,92 @@ func (e *SceneEditor) drawFiguresList() {
 	}
 }
 
+func (e *SceneEditor) initializeCoordinateDisplay() {
+	displayWidth := int32(200)
+	displayHeight := int32(150)
+	e.CoordinateDisplayRect = sdl.Rect{
+		X: WIDTH - displayWidth - 10,
+		Y: 80, // Positioned below the buttons
+		W: displayWidth,
+		H: displayHeight,
+	}
+}
+
+func (e *SceneEditor) drawCoordinateDisplay() {
+	if e.SelectedObject == nil {
+		return
+	}
+
+	// Draw background
+	e.Renderer.SetDrawColor(240, 240, 240, 255)
+	e.Renderer.FillRect(&e.CoordinateDisplayRect)
+
+	// Draw border
+	e.Renderer.SetDrawColor(70, 130, 180, 255)
+	e.Renderer.DrawRect(&e.CoordinateDisplayRect)
+
+	// Draw title
+	titleY := e.CoordinateDisplayRect.Y + 10
+	e.drawText("Selected Object", e.CoordinateDisplayRect.X+10, titleY, sdl.Color{R: 0, G: 0, B: 0, A: 255})
+
+	// Draw coordinates
+	posY := titleY + 30
+	e.drawText(fmt.Sprintf("Position:"), e.CoordinateDisplayRect.X+10, posY, sdl.Color{R: 0, G: 0, B: 0, A: 255})
+	e.drawText(fmt.Sprintf("X: %.2f", e.SelectedObject.Position.X), e.CoordinateDisplayRect.X+20, posY+20, sdl.Color{R: 0, G: 0, B: 0, A: 255})
+	e.drawText(fmt.Sprintf("Y: %.2f", e.SelectedObject.Position.Y), e.CoordinateDisplayRect.X+20, posY+40, sdl.Color{R: 0, G: 0, B: 0, A: 255})
+	e.drawText(fmt.Sprintf("Z: %.2f", e.SelectedObject.Position.Z), e.CoordinateDisplayRect.X+20, posY+60, sdl.Color{R: 0, G: 0, B: 0, A: 255})
+
+	// Draw rotation
+	rotY := posY + 90
+	e.drawText(fmt.Sprintf("Rotation:"), e.CoordinateDisplayRect.X+10, rotY, sdl.Color{R: 0, G: 0, B: 0, A: 255})
+	e.drawText(fmt.Sprintf("X: %.2f", e.SelectedObject.Rotation.X), e.CoordinateDisplayRect.X+20, rotY+20, sdl.Color{R: 0, G: 0, B: 0, A: 255})
+	e.drawText(fmt.Sprintf("Y: %.2f", e.SelectedObject.Rotation.Y), e.CoordinateDisplayRect.X+20, rotY+40, sdl.Color{R: 0, G: 0, B: 0, A: 255})
+	e.drawText(fmt.Sprintf("Z: %.2f", e.SelectedObject.Rotation.Z), e.CoordinateDisplayRect.X+20, rotY+60, sdl.Color{R: 0, G: 0, B: 0, A: 255})
+}
+
+func (e *SceneEditor) handleMoveClick(event *sdl.KeyboardEvent) {
+	moveOffset := float64(1)
+	if e.SelectedObject != nil && e.EditMode != "" {
+		fmt.Println("selected", e.EditMode)
+
+		if event.Keysym.Sym == sdl.K_LEFT && event.State == sdl.PRESSED {
+			e.SelectedObject.Position.X -= moveOffset
+		} else if event.Keysym.Sym == sdl.K_RIGHT && event.State == sdl.PRESSED {
+			e.SelectedObject.Position.X += moveOffset
+		} else if event.Keysym.Sym == sdl.K_UP && event.State == sdl.PRESSED {
+			e.SelectedObject.Position.Y += moveOffset
+		} else if event.Keysym.Sym == sdl.K_DOWN && event.State == sdl.PRESSED {
+			e.SelectedObject.Position.Y -= moveOffset
+		} else if event.Keysym.Sym == sdl.K_1 && event.State == sdl.PRESSED {
+			e.SelectedObject.Position.Z -= moveOffset
+		} else if event.Keysym.Sym == sdl.K_2 && event.State == sdl.PRESSED {
+			e.SelectedObject.Position.Z += moveOffset
+		}
+
+		// dx := float64(event.XRel) * 0.01
+		// dy := float64(event.YRel) * 0.01
+
+		// switch e.EditMode {
+		// case "position":
+		// 	e.SelectedObject.Position.X += dx
+		// 	e.SelectedObject.Position.Y -= dy
+		// case "rotation":
+		// 	e.SelectedObject.Rotation.X += dy
+		// 	e.SelectedObject.Rotation.Y += dx
+		// case "scale":
+		// 	e.SelectedObject.Size.X += dx
+		// 	e.SelectedObject.Size.Y += dy
+		// 	e.SelectedObject.Size.Z += (dx + dy) / 2
+		// }
+	}
+
+}
 func (e *SceneEditor) handleMouseMotion(event *sdl.MouseMotionEvent) {
 	for i := range e.Buttons {
 		e.Buttons[i].IsHovered = event.X >= e.Buttons[i].Rect.X && event.X < e.Buttons[i].Rect.X+e.Buttons[i].Rect.W &&
 			event.Y >= e.Buttons[i].Rect.Y && event.Y < e.Buttons[i].Rect.Y+e.Buttons[i].Rect.H
 	}
 
-	if e.SelectedObject != nil && e.EditMode != "" {
-		fmt.Println("selected", e.EditMode)
-
-		dx := float64(event.XRel) * 0.01
-		dy := float64(event.YRel) * 0.01
-
-		switch e.EditMode {
-		case "position":
-			e.SelectedObject.Position.X += dx
-			e.SelectedObject.Position.Y -= dy
-		case "rotation":
-			e.SelectedObject.Rotation.X += dy
-			e.SelectedObject.Rotation.Y += dx
-		case "scale":
-			e.SelectedObject.Size.X += dx
-			e.SelectedObject.Size.Y += dy
-			e.SelectedObject.Size.Z += (dx + dy) / 2
-		}
-	}
 }
 
 func (e *SceneEditor) handleMouseClick(event *sdl.MouseButtonEvent) {
@@ -218,6 +280,7 @@ func (e *SceneEditor) DrawScene() {
 	e.Renderer.SetDrawColor(245, 245, 245, 255)
 	e.drawButtons()
 	e.drawFiguresList()
+	e.drawCoordinateDisplay()
 
 	// Draw selection outline for the selected object
 	if e.SelectedObject != nil {
