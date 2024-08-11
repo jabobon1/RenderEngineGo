@@ -40,25 +40,15 @@ func Normalize(v Vector3D) Vector3D {
 	return Vector3D{X: v.X / mag, Y: v.Y / mag, Z: v.Z / mag}
 }
 
-func Add(v1, v2 Vector3D) Vector3D {
-	return Vector3D{v1.X + v2.X, v1.Y + v2.Y, v1.Z + v2.Z}
-}
-func Add2D(v1, v2 Vector2D) Vector2D {
-	return Vector2D{v1.X + v2.X, v1.Y + v2.Y}
-}
-func Mult(v1, v2 Vector3D) Vector3D {
-	return Vector3D{v1.X * v2.X, v1.Y * v2.Y, v1.Z * v2.Z}
-}
-func Mult2D(v1, v2 Vector2D) Vector2D {
-	return Vector2D{v1.X * v2.X, v1.Y * v2.Y}
+func Add[V Vector](v1, v2 V) V {
+	return v1.Add(v2).(V)
 }
 
-func Sub(v1, v2 Vector3D) Vector3D {
-	return Vector3D{X: v1.X - v2.X, Y: v1.Y - v2.Y, Z: v1.Z - v2.Z}
+func Sub[V Vector](v1, v2 V) V {
+	return v1.Sub(v2).(V)
 }
-
-func Sub2D(v1, v2 Vector2D) Vector2D {
-	return Vector2D{v1.X - v2.X, v1.Y - v2.Y}
+func Mult[V Vector](v1, v2 V) V {
+	return v1.Mult(v2).(V)
 }
 
 func Cross(v1, v2 Vector3D) Vector3D {

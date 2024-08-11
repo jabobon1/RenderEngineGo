@@ -7,12 +7,49 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+type Vector interface {
+	Add(v Vector) Vector
+	Sub(v Vector) Vector
+	Mult(v Vector) Vector
+}
+
 type Vector2D struct {
 	X, Y float64
 }
+
+func (v1 Vector2D) Add(v Vector) Vector {
+	v2 := v.(Vector2D)
+	return Vector2D{v1.X + v2.X, v1.Y + v2.Y}
+}
+
+func (v1 Vector2D) Sub(v Vector) Vector {
+	v2 := v.(Vector2D)
+	return Vector2D{v1.X - v2.X, v1.Y - v2.Y}
+}
+func (v1 Vector2D) Mult(v Vector) Vector {
+	v2 := v.(Vector2D)
+	return Vector2D{v1.X * v2.X, v1.Y * v2.Y}
+}
+
 type Vector3D struct {
 	X, Y, Z float64
 }
+
+func (v1 Vector3D) Add(v Vector) Vector {
+	v2 := v.(Vector3D)
+	return Vector3D{v1.X + v2.X, v1.Y + v2.Y, v1.Z + v2.Z}
+}
+
+func (v1 Vector3D) Sub(v Vector) Vector {
+	v2 := v.(Vector3D)
+	return Vector3D{v1.X - v2.X, v1.Y - v2.Y, v1.Z - v2.Z}
+}
+
+func (v1 Vector3D) Mult(v Vector) Vector {
+	v2 := v.(Vector3D)
+	return Vector3D{v1.X * v2.X, v1.Y * v2.Y, v1.Z * v2.Z}
+}
+
 type Vector4D struct {
 	X, Y, Z, W float64
 }
